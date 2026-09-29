@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title>Busca CEP</title>
+</head>
+
+<body>
+
+    <h1>Buscar CEP</h1>
+
+    <input type="text" id="cep" placeholder="Digite o CEP" />
+    <button onclick="buscarCep()">Buscar</button>
+
+    <p id="aviso"></p>
+
+    <div id="resultado"></div>
+
+    <script>
+        async function buscarCep() {
+
+            const cep = document.getElementById("cep").value.trim();
+            const aviso = document.getElementById("aviso");
+            const resultado = document.getElementById("resultado");
+
+            aviso.textContent = "";
+            resultado.innerHTML = "";
+
+            const cepLimpo = cep.replace(/\D/g, "");
+
+            if (cepLimpo.length !== 8) {
+                aviso.textContent = "Digite um CEP válido com 8 números.";
+                return;
+            }
+
+            try {
+
+                const resposta = await fetch(
+                    `https://viacep.com.br/ws/${cepLimpo}/json/`
+                );
+
+                if (!resposta.ok) {
+                    aviso.textContent = "Erro ao consultar o CEP.";
+                    return;
+                }
+
+                const dados = await resposta.json();
+
+                if (dados.erro) {
+                    aviso.textContent = "CEP não encontrado.";
+                    return;
+                }
+
+                resultado.innerHTML = `
+                    <h2>Resultado</h2>
+
+                    <p>
+                        <strong>CEP:</strong>
+                        ${dados.cep}
+                    </p>
+
+                    <p>
+                        <strong>Logradouro:</strong>
+                        ${dados.logradouro}
+                    </p>
+
+                    <p>
+                        <strong>Complemento:</strong>
+                        ${dados.complemento || "Não informado"}
+                    </p>
+
+                    <p>
+                        <strong>Bairro:</strong>
+                        ${dados.bairro}
+                    </p>
+
+                    <p>
+                        <strong>Cidade:</strong>
+                        ${dados.localidade}
+                    </p>
+
+                    <p>
+                        <strong>Estado:</strong>
+                        ${dados.uf}
+                    </p>
+
+                    <p>
+                        <strong>DDD:</strong>
+                        ${dados.ddd}
+                    </p>
+                `;
+
+            } catch (erro) {
+                aviso.textContent = "Não foi possível consultar o CEP.";
+                console.error(erro);
+            }
+        }
+    </script>
+
+</body>
+</html>
